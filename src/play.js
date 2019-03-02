@@ -2,14 +2,13 @@
 const { spawn } = require('child_process');
 const fetch = require('node-fetch');
 
-async function playVideo(url, qualityPreferences, whenDone) {
+async function playVideo(url, qualityPreferrences, x264only, whenDone) {
     const id = extractId(url);
     const videoInfo = await fetchVideoInfo(id);
     const playerResponse = parseVideoInfoApiResponse(videoInfo);
         
-
-    const streams = selectStreams(playerResponse);
-    const video = getPreferredVideoStream(streams, qualityPreferences);
+    const streams = selectStreams(playerResponse, x264only);
+    const video = getPreferredVideoStream(streams, qualityPreferrences);
     const audio = streams.filter(af => af.mimeType.includes('audio'))[0];
 
     const author = playerResponse.videoDetails.author.split('+').join(' ');
@@ -24,9 +23,9 @@ async function playVideo(url, qualityPreferences, whenDone) {
     childProcess.on('exit', whenDone);
     return { current, childProcess };
 }
-function getPreferredVideoStream(streams, qualityPreferences) {
+function getPreferredVideoStream(streams, qualityPreferrences) {
     const videoStreams = streams.filter(af => af.mimeType.includes('video'));
-    for (const quality of qualityPreferences) {
+    for (const quality of qualityPreferrences) {
         const stream = videoStreams.find(stream => stream.quality === quality);
         if (stream) return stream;
     }
@@ -61,15 +60,14 @@ function parseVideoInfoApiResponse(content) {
     return JSON.parse(stats['player_response']);
 }
 
-function selectStreams(playerResponse) {
-    const adaptiveFormats = playerResponse.streamingData.adaptiveFormats;
-    return adaptiveFormats
-                .filter(af => af.mimeType.includes('mp4'))
-                .map(af => ({
-                    url: af.url,
-                    quality: af.qualityLabel,
-                    mimeType: af.mimeType
-                }));
+function selectStreams(playerResponse, x264only) {
+    let adaptiveFormats = playerResponse.streamingData.adaptiveFormats;
+    if (x264only) adaptiveFormats = adaptiveFormats.filter(af => af.mimeType.includes('mp4'));
+    return adaptiveFormats.map(af => ({
+        url: af.url,
+        quality: af.qualityLabel,
+        mimeType: af.mimeType
+    }));
 }
 
 module.exports = { playVideo, extractId };
