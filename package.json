@@ -1,0 +1,21 @@
+{
+  "name": "vlctube",
+  "version": "1.0.0-alpha",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Malte Rosenbjerg",
+  "dependencies": {
+    "clipboardy": "^1.2.3",
+    "electron": "^4.0.6",
+    "node-fetch": "^2.3.0"
+  },
+  "bin": {
+    "vlctube": "src/index.js"
+  },
+  "scripts": {
+    "start": "electron src",
+    "package-mac": "electron-packager . --overwrite --platform=darwin --arch=x64 --icon=assets/vlctube.icns --prune=true --out=release-builds",
+    "package-win": "electron-packager . --overwrite --asar --platform=win32 --arch=x64 --icon=assets/vlctube.ico --prune=true --out=release-builds --version-string.CompanyName=RS --version-string.FileDescription=VLCTube",
+    "package-linux": "electron-packager . --overwrite --asar --platform=linux --arch=x64 --icon=assets/vlctube.png --prune=true --out=release-builds"
+  }
+}
