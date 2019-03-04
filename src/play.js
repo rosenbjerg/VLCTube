@@ -37,11 +37,11 @@ function extractId(url) {
     const match = idRegex.exec(url);
     if (match)
         return match[1];
-    throw new Error("Unable to find video ID in URL - example of valid url: https://www.youtube.com/watch?v=qwXYq-71t0U");
+    throw new Error("Unable to find video ID in URL");
 }
 
 async function fetchVideoInfo(id) {
-    const response = await fetch(`https://www.youtube.com/get_video_info?video_id=${id}`);
+    const response = await fetch(`https://www.youtube.com/get_video_info?video_id=${id}&eurl=https://youtube.googleapis.com/v/${id}&gl=US&hl=en`);
     if (response.ok) 
         return await response.text();
     else
@@ -61,6 +61,9 @@ function parseVideoInfoApiResponse(content) {
 }
 
 function selectStreams(playerResponse, x264only) {
+    if (!playerResponse.streamingData || !playerResponse.streamingData.adaptiveFormats) {
+        throw new Error('No adaptive format streams found')
+    }
     let adaptiveFormats = playerResponse.streamingData.adaptiveFormats;
     if (x264only) adaptiveFormats = adaptiveFormats.filter(af => af.mimeType.includes('mp4'));
     return adaptiveFormats.map(af => ({

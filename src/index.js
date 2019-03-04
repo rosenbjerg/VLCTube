@@ -49,10 +49,12 @@ const play = async url => {
         if (playing && playing.childProcess) playing.childProcess.kill();
         const qualityPrefs = qualities.slice(qualities.indexOf(qualityPreferrence));
         playing = await playVideo(url, qualityPrefs, x264only, playNext);
-        tray.setToolTip(playing.current + ' - VLCTube');
+        const queueString = queue.length > 0 ? ' - ' + queue.length + ' in queue' : '';
+        tray.setToolTip(playing.current + ' - VLCTube' + queueString);
     }
     catch (e) {
         console.log(e.message);
+        playNext();
     }
 }
 
