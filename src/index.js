@@ -1,13 +1,9 @@
-"use strict";
-
-const { app, Menu, Tray } = require('electron');
+const { app, Menu, Tray, nativeImage } = require('electron');
 const { platform } = require('os');
 const { playVideo, extractId } = require('./play');
+const path = require('path');
 const clipboardy = require('clipboardy');
 const pkg = require('../package.json');
-
-const queue = [];
-let playing = null;
 
 const qualities = [
     '2160p60',
@@ -20,26 +16,31 @@ const qualities = [
     '720p',
     '480p'
 ];
-let qualityPreferrence = '1080p60';
+
+const queue = [];
+let playing = null;
+let qualityPreference = '1080p60';
 let x264only = true;
 
 let tray = null;
 app.on('ready', () => {
-    tray = new Tray(platform() === 'win32' ? 'assets/vlctube.ico' : 'assets/vlctube.png');
+    const icon = platform() === 'win32' ? 'vlctube.ico' : 'vlctube.png';
+    const iconImage = nativeImage.createFromPath(path.join(__dirname, '..', 'assets', icon));
+    tray = new Tray(iconImage);
     tray.setIgnoreDoubleClickEvents(true);
     tray.on('click', tray.popUpContextMenu);
 
     const contextMenu = Menu.buildFromTemplate([
         {label: 'Play from clipboard', click: playFromClipboard },
         {label: 'Enqueue from clipboard', click: enqueueFromClipboard},
-        {label: 'Preferred quality', submenu: qualities.map(q => ({label: q, type: 'radio', checked: q === qualityPreferrence, click: () => qualityPreferrence = q}))},
+        {label: 'Preferred quality', submenu: qualities.map(q => ({label: q, type: 'radio', checked: q === qualityPreference, click: () => qualityPreference = q}))},
         {label: 'Only play x264 streams', type: 'checkbox', checked: x264only, click: () => (x264only = !x264only)},
         {label: `VLCTube v. ${pkg.version}`, enabled: false},
         {label: 'Quit', role: 'quit'}
     ]);
     tray.setToolTip('VLCTube');
     tray.setContextMenu(contextMenu);
-})
+});
 
 
 
@@ -47,7 +48,7 @@ app.on('ready', () => {
 const play = async url => {
     try {
         if (playing && playing.childProcess) playing.childProcess.kill();
-        const qualityPrefs = qualities.slice(qualities.indexOf(qualityPreferrence));
+        const qualityPrefs = qualities.slice(qualities.indexOf(qualityPreference));
         playing = await playVideo(url, qualityPrefs, x264only, playNext);
         const queueString = queue.length > 0 ? ' - ' + queue.length + ' in queue' : '';
         tray.setToolTip(playing.current + ' - VLCTube' + queueString);
@@ -56,7 +57,7 @@ const play = async url => {
         console.log(e.message);
         playNext();
     }
-}
+};
 
 
 async function playFromClipboard() {
@@ -83,5 +84,5 @@ function playNext() {
     }
 }
 
-let arg = process.argv.filter(a => a.includes('.youtube.'));
-if (arg.length !== 0) play(arg[0]);
+// let arg = process.argv.filter(a => a.includes('.youtube.'));
+// if (arg.length !== 0) play(arg[0]);

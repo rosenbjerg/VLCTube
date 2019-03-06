@@ -1,4 +1,3 @@
-
 const { spawn } = require('child_process');
 const fetch = require('node-fetch');
 
@@ -6,7 +5,7 @@ async function playVideo(url, qualityPreferrences, x264only, whenDone) {
     const id = extractId(url);
     const videoInfo = await fetchVideoInfo(id);
     const playerResponse = parseVideoInfoApiResponse(videoInfo);
-        
+
     const streams = selectStreams(playerResponse, x264only);
     const video = getPreferredVideoStream(streams, qualityPreferrences);
     const audio = streams.filter(af => af.mimeType.includes('audio'))[0];
@@ -42,7 +41,7 @@ function extractId(url) {
 
 async function fetchVideoInfo(id) {
     const response = await fetch(`https://www.youtube.com/get_video_info?video_id=${id}&eurl=https://youtube.googleapis.com/v/${id}&gl=US&hl=en`);
-    if (response.ok) 
+    if (response.ok)
         return await response.text();
     else
         throw new Error("Could not fetch video info")
