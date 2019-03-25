@@ -52,9 +52,8 @@ function parseVideoInfoApiResponse(content) {
     const stats = {};
     for (const attr of attributes) {
         const equal = attr.split('=');
-        const key = equal[0]
-        const value = decodeURIComponent(equal[1]);
-        stats[key] = value;
+        const key = equal[0];
+        stats[key] = decodeURIComponent(equal[1]);
     }
     return JSON.parse(stats['player_response']);
 }

@@ -48,10 +48,8 @@ app.on('ready', () => {
 const play = async url => {
     try {
         if (playing && playing.childProcess) playing.childProcess.kill();
-        const qualityPrefs = qualities.slice(qualities.indexOf(qualityPreference));
-        playing = await playVideo(url, qualityPrefs, x264only, playNext);
-        const queueString = queue.length > 0 ? ' - ' + queue.length + ' in queue' : '';
-        tray.setToolTip(playing.current + ' - VLCTube' + queueString);
+        const qualityPreferences = qualities.slice(qualities.indexOf(qualityPreference));
+        playing = await playVideo(url, qualityPreferences, x264only, playNext);
     }
     catch (e) {
         console.log(e.message);
@@ -59,9 +57,19 @@ const play = async url => {
     }
 };
 
+const updateTooltip = () => {
+    const queueString = queue.length > 0 ? ' - ' + queue.length + ' in queue' : '';
+    let tooltip = 'VLCTube' + queueString;
+    if (playing) {
+        tooltip =  playing.current + ' - ' + tooltip;
+    }
+    tray.setToolTip(tooltip);
+};
+
 
 async function playFromClipboard() {
     play(await clipboardy.read());
+    updateTooltip();
 }
 
 async function enqueueFromClipboard() {
@@ -70,6 +78,7 @@ async function enqueueFromClipboard() {
         extractId(url);
         queue.push(url);
         if (!playing && queue.length === 1) playNext();
+        updateTooltip();
     }
     catch (e) {
         console.log(e.message);
@@ -77,11 +86,11 @@ async function enqueueFromClipboard() {
 }
 
 function playNext() {
-    if (queue.length > 0) play(queue.pop());
+    if (queue.length > 0) play(queue.shift());
     else {
         playing = null;
-        tray.setToolTip('VLCTube');
     }
+    updateTooltip();
 }
 
 // let arg = process.argv.filter(a => a.includes('.youtube.'));
