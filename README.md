@@ -13,6 +13,9 @@ VLCTube is a simple tray-application that you can use to quickly open a YouTube 
 - Support for setting a preferred quality, so you can set it to select the 720p60 stream even though a 1080p60 stream is also available (maximum wanted quality)
 
 ## Installation
+- Download the latest release
+- Unpack to wanted install location
+or
 - Clone this repository and navigate inside the `VLCTube` directory
 - Run `yarn install` or `npm install` to install dependencies
 - Run `yarn start` or `npm start` to open the Electron tray-application
@@ -24,7 +27,7 @@ VLCTube is a simple tray-application that you can use to quickly open a YouTube 
 ## Usage
 - Click on the tray icon to open the menu
   - `Play from clipboard` grabs the URL from the clipboard and plays it immediately
-  - `Enqueue from clipboard` grabs the URL from the clipboard and adds it to the queue. Automatically starts playback when a video is enqueued to an empty queue and nothing is playing
+  - `Enqueue from clipboard` grabs the URL from the clipboard and adds it to the player. Automatically starts playback when a video is enqueued to an empty player and nothing is playing
   - `Preferred quality` opens a submenu where you can set the preferred quality
   - `Only play x264 streams` toggles whether to only play x264 streams or also include the AV1/VP9 streams
 
