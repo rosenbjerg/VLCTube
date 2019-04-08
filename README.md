@@ -15,6 +15,7 @@ VLCTube is a simple tray-application that you can use to quickly open a YouTube 
 ## Installation
 - Download the latest release
 - Unpack to wanted install location
+
 or
 - Clone this repository and navigate inside the `VLCTube` directory
 - Run `yarn install` or `npm install` to install dependencies
