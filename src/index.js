@@ -19,7 +19,7 @@ const qualities = [
     '480p'
 ];
 let qualityPreference = '1080p60';
-const setQualityPreference = pref => qualityPreference = pref;
+const setQualityPreference = pref => () => qualityPreference = pref;
 
 let x264only = true;
 let playing = null;
@@ -43,22 +43,22 @@ function updateInterface() {
 }
 function buildMenu() {
     return Menu.buildFromTemplate([
-        {label: 'Play from clipboard', click: playFromClipboard },
-        {label: 'Enqueue from clipboard', click: enqueueFromClipboard},
-        {label: `${queue.length()} in queue`, enabled: queue.length() !== 0, submenu: queue.view().map((info, i) => ({label: info.title, click: onQueueItemClicked(i)}))},
-        {label: 'Preferred quality', submenu: qualities.map(q => ({label: q, type: 'radio', checked: q === qualityPreference, click: () => setQualityPreference(q)}))},
-        {label: 'Only play x264 streams', type: 'checkbox', checked: x264only, click: () => x264only = !x264only},
-        {label: `VLCTube v. ${pkg.version}`, enabled: false},
-        {label: 'Quit', role: 'quit'}
+        { label: 'Play from clipboard', click: playFromClipboard  },
+        { label: 'Enqueue from clipboard', click: enqueueFromClipboard },
+        { label: `${queue.length()} in queue`, enabled: queue.length() !== 0, submenu: queue.view().map((info, i) => ({ label: info.title, click: onQueueItemClicked(i) })) },
+        { label: 'Preferred quality', submenu: qualities.map(q => ({ label: q, type: 'radio', checked: q === qualityPreference, click: setQualityPreference(q) })) },
+        { label: 'Only play x264 streams', type: 'checkbox', checked: x264only, click: () => x264only = !x264only },
+        { label: `VLCTube v. ${pkg.version}`, enabled: false },
+        { label: 'Quit', role: 'quit' }
     ]);
 }
 function formatInfo(info) {
     return `${info.channel}: ${info.title} (${info.video.quality})`;
 }
 
-function onQueueItemClicked() {
-    return index => {
-        queue.skipTo(index);
+function onQueueItemClicked(index) {
+    return () => {
+        queue.skip(index);
         if (playing && playing.vlc) playing.vlc.kill();
         else start(queue.next())
     };
@@ -86,17 +86,12 @@ async function playFromClipboard() {
 }
 
 async function enqueueFromClipboard() {
-    try {
-        const url = await clipboardy.read();
-        const videoInfos = await info(url);
-        const wasEmpty = queue.length() === 0;
-        queue.enqueue(videoInfos);
-        if (!playing && wasEmpty) start(queue.next());
-        else updateInterface();
-    }
-    catch (e) {
-        console.log(e.message);
-    }
+    const url = await clipboardy.read();
+    const videoInfos = await info(url);
+    const wasEmpty = queue.length() === 0;
+    queue.enqueue(videoInfos);
+    if (!playing && wasEmpty) start(queue.next());
+    else updateInterface();
 }
 
 function startVlc(info) {

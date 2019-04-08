@@ -1,9 +1,10 @@
-const fetch = require('node-fetch');
+const got = require('got');
 
 const trRegex = /<tr.*?data-title="([^"]+)".*?data-video-id="([^"]+)".*?>/g;
 async function fetchPlaylistInfo(id) {
     const url = `https://www.youtube.com/playlist?list=${id}`;
-    const html = await fetch(url).then(response => response.text());
+    const response = await got(url);
+    const html = response.body;
     const items = [];
 
     let match;

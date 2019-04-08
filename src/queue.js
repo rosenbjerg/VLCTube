@@ -1,9 +1,8 @@
 
 const queue = [];
 
-function skipTo(index) {
-    queue.splice(0, index);
-    return queue[0];
+function skip(amount) {
+    queue.splice(0, amount);
 }
 function next() {
     return queue.shift();
@@ -22,5 +21,5 @@ function length() {
 }
 
 module.exports = {
-    next, enqueue, skipTo, view, length
+    next, enqueue, skip, view, length
 };

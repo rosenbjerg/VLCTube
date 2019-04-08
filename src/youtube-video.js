@@ -1,9 +1,7 @@
-const fetch = require('node-fetch');
+const got = require('got');
 
 async function fetchFullInfo(id, qualityPreferences, x264only) {
-    const videoInfo = await downloadVideoInfo(id);
-    const playerResponse = parseVideoInfoApiResponse(videoInfo);
-
+    const playerResponse = await fetchPlayerResponse(id);
     const streams = selectStreams(playerResponse, x264only);
     const video = getPreferredVideoStream(streams, qualityPreferences);
     const audio = streams.filter(af => af.mimeType.includes('audio'))[0];
@@ -15,8 +13,7 @@ async function fetchFullInfo(id, qualityPreferences, x264only) {
 }
 
 async function fetchVideoInfo(id) {
-    const videoInfo = await downloadVideoInfo(id);
-    const playerResponse = parseVideoInfoApiResponse(videoInfo);
+    const playerResponse = await fetchPlayerResponse(id);
     const title = playerResponse.videoDetails.title.split('+').join(' ');
     return { title, id };
 }
@@ -30,16 +27,9 @@ function getPreferredVideoStream(streams, qualityPreferences) {
     return videoStreams[0];
 }
 
-async function downloadVideoInfo(id) {
-    const response = await fetch(`https://www.youtube.com/get_video_info?video_id=${id}&eurl=https://youtube.googleapis.com/v/${id}&gl=US&hl=en`);
-    if (response.ok)
-        return await response.text();
-    else
-        throw new Error("Could not fetch video info")
-}
-
-function parseVideoInfoApiResponse(content) {
-    const attributes = content.split('&');
+async function fetchPlayerResponse(id) {
+    const response = await got(`https://www.youtube.com/get_video_info?video_id=${id}&eurl=https://youtube.googleapis.com/v/${id}&gl=US&hl=en`);
+    const attributes = response.body.split('&');
     const stats = {};
     for (const attr of attributes) {
         const equal = attr.split('=');
