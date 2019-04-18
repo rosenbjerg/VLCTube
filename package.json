@@ -1,12 +1,13 @@
 {
   "name": "vlctube",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "main": "src/index.js",
   "license": "MIT",
   "author": "Malte Rosenbjerg",
   "dependencies": {
     "clipboardy": "^1.2.3",
-    "got": "^9.6.0"
+    "got": "^9.6.0",
+    "ytdl-core": "^0.29.1"
   },
   "bin": {
     "vlctube": "src/index.js"

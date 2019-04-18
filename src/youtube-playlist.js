@@ -9,7 +9,7 @@ async function fetchPlaylistInfo(id) {
 
     let match;
     while (match = trRegex.exec(html)) {
-        items.push({ title: match[1], id: match[2] });
+        items.push({ title: match[1].replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec)), id: match[2] });
     }
     return items;
 }

@@ -1,55 +1,47 @@
-const got = require('got');
+const ytdl = require('ytdl-core');
+const fs = require('fs');
 
 async function fetchFullInfo(id, qualityPreferences, x264only) {
-    const playerResponse = await fetchPlayerResponse(id);
-    const streams = selectStreams(playerResponse, x264only);
-    const video = getPreferredVideoStream(streams, qualityPreferences);
-    const audio = streams.filter(af => af.mimeType.includes('audio'))[0];
+    const ytInfo = await ytdl.getBasicInfo(`https://www.youtube.com/watch?v=${id}`);
+    const streams = selectStreams(ytInfo.formats, x264only);
+    fs.writeFileSync("streams.json", JSON.stringify(streams));
+    const video = getPreferredVideoStream(streams.video, qualityPreferences);
+    const audio = streams.audio[0];
 
-    const channel = playerResponse.videoDetails.author.split('+').join(' ');
-    const title = playerResponse.videoDetails.title.split('+').join(' ');
+    const channel = ytInfo.author.name;
+    const title = ytInfo.player_response.videoDetails.title;
 
     return { channel, title, video, audio };
 }
 
 async function fetchVideoInfo(id) {
-    const playerResponse = await fetchPlayerResponse(id);
-    const title = playerResponse.videoDetails.title.split('+').join(' ');
+    const ytInfo = await ytdl.getBasicInfo(`https://www.youtube.com/watch?v=${id}`);
+    const title = ytInfo.player_response.videoDetails.title;
     return { title, id };
 }
 
-function getPreferredVideoStream(streams, qualityPreferences) {
-    const videoStreams = streams.filter(af => af.mimeType.includes('video'));
+function getPreferredVideoStream(videoStreams, qualityPreferences) {
     for (const quality of qualityPreferences) {
-        const stream = videoStreams.find(stream => stream.quality === quality);
+        const stream = videoStreams.find(stream => stream.quality_label === quality);
         if (stream) return stream;
     }
     return videoStreams[0];
 }
 
-async function fetchPlayerResponse(id) {
-    const response = await got(`https://www.youtube.com/get_video_info?video_id=${id}&eurl=https://youtube.googleapis.com/v/${id}&gl=US&hl=en`);
-    const attributes = response.body.split('&');
-    const stats = {};
-    for (const attr of attributes) {
-        const equal = attr.split('=');
-        const key = equal[0];
-        stats[key] = decodeURIComponent(equal[1]);
+function selectStreams(allFormats, x264only) {
+    let adaptiveVideoFormats = allFormats.filter(f => f.quality_label !== undefined).map(f => {
+        f.quality_label += f.fps === 60 ? '60' : '';
+        return f;
+    });
+    let adaptiveAudioFormats = allFormats.filter(f => f.audio_sample_rate !== undefined);
+    if (x264only) {
+        adaptiveVideoFormats = adaptiveVideoFormats.filter(f => f.type.startsWith('video/mp4'));
+        adaptiveAudioFormats = adaptiveAudioFormats.filter(f => f.type.startsWith('audio/mp4'));
     }
-    return JSON.parse(stats['player_response']);
-}
-
-function selectStreams(playerResponse, x264only) {
-    if (!playerResponse.streamingData || !playerResponse.streamingData.adaptiveFormats) {
-        throw new Error('No adaptive format streams found')
-    }
-    let adaptiveFormats = playerResponse.streamingData.adaptiveFormats;
-    if (x264only) adaptiveFormats = adaptiveFormats.filter(af => af.mimeType.includes('mp4'));
-    return adaptiveFormats.map(af => ({
-        url: af.url,
-        quality: af.qualityLabel,
-        mimeType: af.mimeType
-    }));
+    return {
+        video: adaptiveVideoFormats,
+        audio: adaptiveAudioFormats
+    };
 }
 
 module.exports = { fetchVideoInfo, fetchFullInfo };
