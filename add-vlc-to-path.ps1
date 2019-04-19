@@ -1,0 +1,1 @@
+if ($env:path -contains ";C:\Program Files\VideoLAN\VLC") { [Environment]::SetEnvironmentVariable("PATH", $env:path + ";C:\Program Files\VideoLAN\VLC", "Machine"); echo "VLC added to PATH" } else { echo "PATH already contains the path to VLC" }
