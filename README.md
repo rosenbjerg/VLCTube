@@ -24,6 +24,12 @@ or
 ## Requirements
 - VLC media player (tested on v. 3.0.6)
   - Must be added to the `PATH` variable, so it is available as `vlc`
+  
+**PowerShell script to add VLC to path on Windows**
+```powershell
+if ($env:Path -contains ";C:\Program Files\VideoLAN\VLC") { echo "PATH already contains the path to VLC" } else { [Environment]::SetEnvironmentVariable("PATH", $env:path + ";C:\Program Files\VideoLAN\VLC", "Machine"); echo "VLC added to PATH" }
+```
+  
 
 ## Usage
 - Click on the tray icon to open the menu
